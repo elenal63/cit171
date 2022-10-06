@@ -1,25 +1,30 @@
 //© 2021 Sean Murdock
-
-let userName = "";
-let password = "";
+let phonenumber = "";
+let onetimepassword = "";
 let verifypassword = "";
 let passwordRegEx=/((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%!]).{6,40})/;
 
-function setusername(){
-    userName = $("#username").val();
+function setphonenumber(){
+    phonenumber = $("#phonenumber").val();
 }
 
-function setuserpassword(){
-    password = $("#password").val();
-    var valid=passwordRegEx.exec(password);
-    if (!valid){
-        alert('Must be 6 digits, upper, lower, number, and symbol');
-    }
+const sendText=()=>{
+    $.ajax({
+        type: 'Post',
+        url: 'https://dev.stedi.me/twofactorlogin/'+phonenumber,
+        contentType: "application/text",
+        dataType: 'text'
+    });
+}
+
+function setonetimepassword(){
+    password = $("#onetimepassword").val();
+    
 }
 
 function setverifypassword(){
     verifypassword = $("#verifypassword").val();
-    if (verifypassword!=password){
+    if (verifypassword!=onetimepassword){
         alert('Passwords must be entered the same twice');
     }
 }
@@ -38,7 +43,7 @@ function checkexpiredtoken(token){
     usertoken = localStorage.getItem("token");
     $.ajax({
        type: 'GET',
-        url: '/validate/'+token,
+        url: 'https://dev.stedi.me/validate/'+token,
         data: JSON.stringify({usertoken}),
         success: function(data){savetoken(data)},
         contentType: "application/text",
@@ -47,12 +52,12 @@ function checkexpiredtoken(token){
 }
 
 function userlogin(){
-    setuserpassword();
-    setusername();
+    setonetimepassword();
+    setphonenumber();
     $.ajax({
         type: 'POST',
-        url: '/login',
-        data: JSON.stringify({userName, password}),
+        url: 'https://dev.stedi.me/twofactorlogin/'+phonenumber,
+        data: JSON.stringify({phoneNumber:phonenumber, oneTimePassword:onetimepassword}),
         success: function(data) {
             window.location.href = "/timer.html#"+data;//add the token to the url
         },
@@ -92,8 +97,8 @@ function createbutton(){
 function createuser(){
     $.ajax({
         type: 'POST',
-        url: '/user',
-        data: JSON.stringify({userName, 'email': userName, password, 'verifyPassword': vpwd, 'accountType':'Personal'}),//we are using the email as the user name
+        url: 'https://dev.stedi.me/user',
+        data: JSON.stringify({phonenumber, 'phonenumber': phonenumber, onetimepassword, 'verifyonetimePassword': vpwd, 'accountType':'Personal'}),//we are using the email as the user name
         success: function(data) { alert(data);
 //        readonlyforms("newUser");
 //        alert(readonlyforms("newUser"));
@@ -106,8 +111,8 @@ function createuser(){
 function getstephistory(){
       $.ajax({
             type: 'POST',
-            url: '/stephistory',
-            data: JSON.stringify({userName}),
+            url: 'https://dev.stedi.me/stephistory',
+            data: JSON.stringify({phonenumber}),
             success: function(data) { alert(data);
             json = $.parseJSON(data);
             $('#results').html(json.name+' Total Steps: ' + json.stepTotal)},
@@ -123,6 +128,7 @@ var enterFunction = (event) =>{
     }
 }
 
-var passwordField = document.getElementById("password");
+var onetimepasswordField = document.getElementById("onetimepassword");
 
-passwordField.addEventListener("keyup", enterFunction);
+onetimepasswordField.addEventListener("keyup", enterFunction);
+Footer
